@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { addToCart } from '../../redux/cartSlice';
 
-function ProductModal({ product, open, onClose }) {
+function ProductModal({ product, open, onClose, bodegaSeleccionada }) {
   const [quantity, setQuantity] = useState('1');
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -106,6 +106,9 @@ function ProductModal({ product, open, onClose }) {
             <Typography sx={{ mb: 2 }}>
               {product.descripcion}
             </Typography>
+            <Typography variant="body1" sx={{ mt: 1, color: 'red', fontWeight: 'bold', mb: 2 }}>
+              Stock Disponible: {product.stocks[bodegaSeleccionada] || 0} Unidades
+            </Typography>
             <TextField
               fullWidth
               label="Cantidad"
@@ -151,5 +154,4 @@ function ProductModal({ product, open, onClose }) {
 }
 
 export default ProductModal;
-
 

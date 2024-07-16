@@ -162,6 +162,9 @@ function ProductsPage() {
                   <Typography variant="body1">
                     {formatCurrency(product.precio)}
                   </Typography>
+                  <Typography variant="body1" sx={{ mt: 1, color: 'red', fontWeight: 'bold' }}>
+                    Stock Disponible: {product.stocks[bodegaSeleccionada] || 0}
+                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -218,6 +221,7 @@ function ProductsPage() {
           product={selectedProduct}
           open={openModal}
           onClose={handleCloseModal}
+          bodegaSeleccionada={bodegaSeleccionada}
         />
       )}
       {totalItems > 0 && <CartSummary onViewCart={handleViewCart} />}
