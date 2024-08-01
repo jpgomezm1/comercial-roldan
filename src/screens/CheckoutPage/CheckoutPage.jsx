@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, TextField, Paper, Divider, CircularProgress, Backdrop, useTheme, MenuItem } from '@mui/material';
+import { Box, Typography, Button, TextField, Paper, Divider, CircularProgress, Backdrop, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, Alert, AlertTitle } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCart } from '../../redux/cartSlice';
 import { useEstablecimiento } from '../../App';
 import Autocomplete from '@mui/material/Autocomplete';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const CheckoutPage = () => {
   const { establecimiento } = useEstablecimiento();
@@ -21,6 +22,8 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
   const [descuento, setDescuento] = useState(0);
+  const [comerciales, setComerciales] = useState([]);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const theme = useTheme();
 
   useEffect(() => {
@@ -28,6 +31,21 @@ const CheckoutPage = () => {
       buscarClientes(name, nit);
     }
   }, [name, nit]);
+
+  useEffect(() => {
+    fetchComerciales();
+  }, []);
+
+  const fetchComerciales = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/comerciales/sin_auth`, {
+        params: { establecimiento }
+      });
+      setComerciales(response.data);
+    } catch (error) {
+      console.error('Error al obtener comerciales:', error);
+    }
+  };
 
   const buscarClientes = async (nombre, nit) => {
     try {
@@ -99,6 +117,9 @@ const CheckoutPage = () => {
     if (!comercialID) {
       valid = false;
       errors.comercialID = 'El ID del comercial es requerido';
+    } else if (!comerciales.some(comercial => comercial.idComercial === comercialID)) {
+      valid = false;
+      errors.comercialID = 'El ID del comercial no es válido';
     }
 
     setErrors(errors);
@@ -107,6 +128,7 @@ const CheckoutPage = () => {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
+      setErrorDialogOpen(true);
       return;
     }
 
@@ -246,6 +268,23 @@ const CheckoutPage = () => {
           Sigue Comprando
         </Button>
       </Box>
+      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>
+          <ErrorOutlineIcon sx={{ color: theme.palette.error.main, mr: 1, verticalAlign: 'middle' }} />
+          <Typography variant="h6" component="span" sx={{ color: theme.palette.error.main }}>Error</Typography>
+        </DialogTitle>
+        <DialogContent dividers sx={{ textAlign: 'center' }}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <AlertTitle><strong>ID del Comercial Inválido</strong></AlertTitle>
+            El ID del comercial proporcionado no es válido. <br />Por favor, verifique e intente nuevamente.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center' }}>
+          <Button onClick={() => setErrorDialogOpen(false)} variant="contained" sx={{ backgroundColor: theme.palette.error.main, '&:hover': { backgroundColor: theme.palette.error.dark }, color: 'white' }}>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={isLoading}
@@ -257,6 +296,3 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-
-
-
