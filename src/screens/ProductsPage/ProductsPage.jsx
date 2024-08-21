@@ -175,8 +175,8 @@ function ProductsPage() {
   };
 
   const handleViewCart = () => {
-    navigate(`/${establecimiento}/cart`);
-  };
+    navigate(`/${establecimiento}/checkout`, { state: { bodegaSeleccionada } });
+};
 
   return (
     <Box sx={{ pt: isLargeScreen ? '120px' : '0', p: 2, pb: totalItems > 0 ? (isLargeScreen ? '170px' : '130px') : 2, maxWidth: { xs: '100%', md: '80%' }, mx: 'auto' }}>

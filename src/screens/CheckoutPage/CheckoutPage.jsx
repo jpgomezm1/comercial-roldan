@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -25,6 +25,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const CheckoutPage = () => {
+  const location = useLocation();
+  const bodegaSeleccionada = location.state?.bodegaSeleccionada;
   const { establecimiento } = useEstablecimiento();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -159,43 +161,44 @@ const CheckoutPage = () => {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      setErrorDialogOpen(true);
-      return;
+        setErrorDialogOpen(true);
+        return;
     }
 
     setIsLoading(true);
     const formData = {
-      nombre_completo: name,
-      numero_telefono: phone,
-      correo_electronico: email,
-      productos: JSON.stringify(
-        cartItems.map((item) => ({
-          ...item,
-          price: item.price * (1 - descuento / 100),
-        }))
-      ),
-      comercial_id: comercialID,
-      nit,
+        nombre_completo: name,
+        numero_telefono: phone,
+        correo_electronico: email,
+        productos: JSON.stringify(
+            cartItems.map((item) => ({
+                ...item,
+                price: item.price * (1 - descuento / 100),
+            }))
+        ),
+        comercial_id: comercialID,
+        nit,
+        bodega_id: bodegaSeleccionada // Asegúrate de pasar este valor aquí
     };
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/pedido?establecimiento=${encodeURIComponent(
-          establecimiento
-        )}`,
-        formData
-      );
+        const response = await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/pedido?establecimiento=${encodeURIComponent(
+                establecimiento
+            )}`,
+            formData
+        );
 
-      if (response.status === 201) {
-        dispatch(clearCart());
-        navigate(`/${establecimiento}/success`, { state: { name } });
-      }
+        if (response.status === 201) {
+            dispatch(clearCart());
+            navigate(`/${establecimiento}/success`, { state: { name } });
+        }
     } catch (error) {
-      console.error('Error al enviar el pedido:', error);
+        console.error('Error al enviar el pedido:', error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   const handleContinueShopping = () => {
     navigate(`/${establecimiento}`);
@@ -427,3 +430,5 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+
+
